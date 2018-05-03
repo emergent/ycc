@@ -9,6 +9,7 @@ SRCDIR=./src
 SOURCES=$(wildcard $(SRCDIR)/*.c)
 OBJDIR=./obj
 OBJS=$(addprefix $(OBJDIR)/, $(notdir $(SOURCES:.c=.o)))
+TESTDIR=./test
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	-mkdir -p $(OBJDIR)
@@ -18,6 +19,9 @@ $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS)
 
 all: clean $(TARGET)
+
+test: $(TARGET)
+	./$(TARGET) $(TESTDIR)/hello.c
 
 clean:
 	rm -rf $(OBJDIR)/*.o *~ $(OBJDIR) $(TARGET)
