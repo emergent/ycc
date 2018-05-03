@@ -1,7 +1,7 @@
 CC=gcc
 DEFINE=
 INCLUDE=
-CFLAGS=-g -Wall -Werror
+CFLAGS=-g -Wall -Werror -pedantic-errors
 LDFLAGS=
 LIBS=
 OBJS=main.o
