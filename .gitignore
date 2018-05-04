@@ -4,3 +4,4 @@ obj/*
 *.s
 *~
 ycc
+Guardfile
