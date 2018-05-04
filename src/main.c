@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include "ycc.h"
 
 #define BUFSIZE 256
 
@@ -43,6 +44,24 @@ char* read_source(char* filename) {
     return data;
 }
 
+/**
+ * frontend:
+ * - lexical analysis
+ * - parsing, syntax analysis
+ * - semantic analysis
+ * 
+ * backend:
+ * - code optimizetion
+ * - generate assembly code
+ */
+int compile(char* src) {
+    char *tokens = NULL;
+    int err;
+    
+    err = lex(&tokens, src);
+    return 0;
+}
+
 int main(int argc, char* argv[]) {
     char *source;
 
@@ -57,6 +76,8 @@ int main(int argc, char* argv[]) {
         printf("failed reading source file\n");
     }
     printf("source:\n%s\n", source);
+
+    compile(source);
 
     free(source);
     return 0;
