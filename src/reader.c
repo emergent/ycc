@@ -20,7 +20,6 @@ void print_tokens(List* l) {
         for (count=0, p=l->top; p; count++,p=p->next) {
             printf("[%03d] %s\n", count, (char*)p->data);
         }
-
     }
 }
 
