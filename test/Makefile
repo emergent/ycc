@@ -5,8 +5,7 @@ INCLUDE=
 CFLAGS=-Wall -Werror -pedantic-errors
 LDFLAGS=
 
-TARGET = hello     \
-		func
+TARGET = hello func add
 
 
 .PHONY: all
