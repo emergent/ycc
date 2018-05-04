@@ -16,7 +16,7 @@ void cell_delete(Cell *cell) {
     free(cell);
 }
 
-size_t list_count_elem(List* list) {
+int list_count_elem(List* list) {
     int count = 0;
     Cell* p = list->top;
     for (; p != NULL; p = p->next) {
