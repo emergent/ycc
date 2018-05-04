@@ -75,7 +75,6 @@ int main(int argc, char* argv[]) {
     if (!(source = read_source(argv[1]))) {
         printf("failed reading source file\n");
     }
-    printf("source:\n%s\n", source);
 
     compile(source);
 
