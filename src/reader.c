@@ -36,6 +36,32 @@ char* skip_spaces(const char* p) {
     return (char*)(p + strspn(p, spaces));
 }
 
+char* skip_comment_line(const char* p) {
+    return strchr(p, '\n') + 1;
+}
+
+char* skip_comment_range(const char* p) {
+    const char* end = "*/";
+    return strstr(p, end) + strlen(end);
+}
+
+size_t len_symbol(const char* p) {
+    return 1 + strspn(p+1, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_");
+}
+
+size_t len_number(const char* p) {
+    return 1 + strspn(p+1, "exL1234567890.");
+}
+
+size_t len_directive(const char* p) {
+    return 1 + strspn(p+1, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+}
+
+size_t len_string(const char* p) {
+    size_t ret_len = strcspn(p+1, "\"");
+    return 1 + ret_len + 1;
+}
+
 /*
     0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
  2     !  "  #  $  %  &  '  (  )  *  +  ,  -  .  /
@@ -46,18 +72,6 @@ char* skip_spaces(const char* p) {
  7  p  q  r  s  t  u  v  w  x  y  z  {  |  }  ~  
   */
 int read_tokens(List* list, const char* p) {
-    /* temporaly code */
-    /*
-    list_append(list, (void*)string_new("int", 3));
-    list_append(list, (void*)string_new("main", 4));
-    list_append(list, (void*)string_new("(", 1));
-    list_append(list, (void*)string_new(")", 1));
-    list_append(list, (void*)string_new("{", 1));
-    list_append(list, (void*)string_new("return", 6));
-    list_append(list, (void*)string_new("0", 1));
-    list_append(list, (void*)string_new(";", 1));
-    list_append(list, (void*)string_new("}", 1));
-    */
     switch (*p) {
         case '!':
         case '(':
@@ -68,27 +82,32 @@ int read_tokens(List* list, const char* p) {
         case ']':
         case '{':
         case '}':
+        case '.':
             p = add_token(list, p, 1);
             break;
         case '"':
-            //p = add_token(list, p, parse_string(p));
-            //break;
+            p = add_token(list, p, len_string(p));    break;
         case '#':
+            p = add_token(list, p, len_directive(p)); break;
         case '%':
         case '&':
         case '\'':
         case '*':
         case '+':
         case '-':
-        case '.':
+            // *** not impl ***
+            p = add_token(list, p, 1);
+            break;
         case '/':
-            //switch (*(p+1)) {
-            //    case '/': p = skip_comment_line(p); break;
-            //    case '*': p = skip_comment_range(p); break;
-            //    default:  p = add_token(list, p, 1);
-            //}
+            switch (*(p+1)) {
+                case '/': p = skip_comment_line(p+2);  break;
+                case '*': p = skip_comment_range(p+2); break;
+                default:  p = add_token(list, p, 1); break;
+            }
+            break;
         case ':':
         case '<':
+            
         case '=':
         case '>':
         case '?':
@@ -103,17 +122,16 @@ int read_tokens(List* list, const char* p) {
         case '@':
             // unused
             break;
-        case '\0':
+        case '\0': // end of file
             return 0;
         default:
-            if ((IS_DIGIT(*p)) || (IS_LETTER(*p))) {
-                // symbol
-                p = add_token(list, p, 1);
-                break;
+            if (IS_LETTER(*p)) { // symbol
+                p = add_token(list, p, len_symbol(p));
+            } else if (IS_DIGIT(*p)) {
+                p = add_token(list, p, len_number(p));
             } else {
                 return -1;
             }
-            
             break;
     }
 
