@@ -37,7 +37,7 @@ char* read_source(char* filename) {
         len = strlen(buf);
         printf("%3zu| %s", len, buf);
         strncpy(p, buf, len);
-        p += len;
+        p += len; 
     }
     fclose(fp);
 
@@ -73,7 +73,8 @@ int main(int argc, char* argv[]) {
     }
 
     if (!(source = read_source(argv[1]))) {
-        printf("failed reading source file\n");
+        printf("failed reading source file: %s\n", argv[1]);
+        return -1;
     }
 
     compile(source);
