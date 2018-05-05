@@ -86,7 +86,7 @@ int read_tokens(List* list, const char* p) {
             //    case '/': p = skip_comment_line(p); break;
             //    case '*': p = skip_comment_range(p); break;
             //    default:  p = add_token(list, p, 1);
-            }
+            //}
         case ':':
         case '<':
         case '=':
