@@ -5,8 +5,7 @@ INCLUDE=
 CFLAGS=-Wall -Werror -pedantic-errors
 LDFLAGS=
 
-TARGET = hello func add
-
+TARGET = hello func add ops
 
 .PHONY: all
 all: $(TARGET)
