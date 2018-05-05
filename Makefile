@@ -25,5 +25,7 @@ test: $(TARGET)
 
 clean:
 	rm -rf $(OBJDIR)/*.o *~ $(OBJDIR) $(TARGET)
+	pushd test ; make clean ; popd
+
 
 
