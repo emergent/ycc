@@ -5,3 +5,6 @@ obj/*
 *~
 ycc
 Guardfile
+/launch.json
+test/tmp.c
+
