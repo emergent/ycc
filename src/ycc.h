@@ -14,8 +14,16 @@
  */
 
 
-
-
+// macro
+#define IS_DIGIT(c)  (c >= '0' && c <= '9')
+#define IS_LETTER(c) ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))
+#define CR '\r'
+#define LF '\n'
+#define TAB '\t'
+#define RPAR '('
+#define LPAR ')'
+#define COMMA ','
+#define DOT   '.'
 
 // for reader
 int lex(char** tokens, const char* src);
