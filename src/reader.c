@@ -76,13 +76,9 @@ size_t len_char(const char* p) {
 <: :> <% %> %: %:%:
 */
 size_t len_punctuator_check(const char* p, char** punc, size_t arrsize) {//, size_t cmpsize) {
-    //size_t arrsize = sizeof(punc)/sizeof(punc[0]);
     size_t cmpsize = strlen(punc[0]);
 
-    printf("%zu, %zu\n", arrsize, cmpsize);
-
     for (int i=0; i < arrsize; i++, punc++) {
-        printf("[%02d] %s\n", i, *punc);
         if (strncmp(*punc, p, cmpsize) == 0) {
             return cmpsize;
         }
@@ -125,6 +121,8 @@ size_t len_punctuator(const char* p) {
  6  `  a  b  c  d  e  f  g  h  i  j  k  l  m  n  o
  7  p  q  r  s  t  u  v  w  x  y  z  {  |  }  ~  
   */
+// TODO: fix infinite loop when len_* returns 0
+
 int read_tokens(List* tkn, List* drct, const char* p) {
     switch (*p) {
         case '!':
