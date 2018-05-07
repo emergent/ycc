@@ -25,9 +25,6 @@
 #define COMMA ','
 #define DOT   '.'
 
-// for reader
-int lex(char** tokens, const char* src);
-
 // for list
 typedef struct _cell {
     void *data;
@@ -42,5 +39,8 @@ typedef struct _list {
 List* list_create();
 List* list_append(List* list, void* data);
 void  list_destroy(List *l);
+
+// for reader
+int lex(List* tokens, List *directive, const char* source);
 
 #endif

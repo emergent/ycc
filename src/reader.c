@@ -31,6 +31,10 @@ void print_tokens(List* l) {
     }
 }
 
+char* skip_line(const char* p) {
+    return strchr(p, '\n') + 1;
+}
+
 char* skip_spaces(const char* p) {
     char *spaces = " \r\n\t";
     return (char*)(p + strspn(p, spaces));
@@ -53,13 +57,63 @@ size_t len_number(const char* p) {
     return 1 + strspn(p+1, "exL1234567890.");
 }
 
-size_t len_directive(const char* p) {
-    return 1 + strspn(p+1, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+size_t len_string(const char* p) {
+    size_t ret_len = strcspn(p+1, "\""); // TODO: not concerned \" and error
+    return 1 + ret_len + 1;
 }
 
-size_t len_string(const char* p) {
-    size_t ret_len = strcspn(p+1, "\"");
+size_t len_char(const char* p) {
+    size_t ret_len = strcspn(p+1, "'"); // TODO: not concerned \' and error
     return 1 + ret_len + 1;
+}
+
+/* punctuators
+[ ] ( ) { } . ->
+++ -- & * + - ~ !
+/ % << >> < > <= >= == != ^ | && || ? : ; ...
+= *= /= %= += -= <<= >>= &= ^= |=
+, # ##
+<: :> <% %> %: %:%:
+*/
+size_t len_punctuator_check(const char* p, char** punc, size_t arrsize) {//, size_t cmpsize) {
+    //size_t arrsize = sizeof(punc)/sizeof(punc[0]);
+    size_t cmpsize = strlen(punc[0]);
+
+    printf("%zu, %zu\n", arrsize, cmpsize);
+
+    for (int i=0; i < arrsize; i++, punc++) {
+        printf("[%02d] %s\n", i, *punc);
+        if (strncmp(*punc, p, cmpsize) == 0) {
+            return cmpsize;
+        }
+    }
+    return 0;
+}
+
+#define ARRAYSIZE(a) (sizeof(a)/sizeof(a[0]))
+
+size_t len_punctuator(const char* p) {
+    char* len_four[]  = { "%:%:" };
+    char* len_three[] = { "...", "<<=", ">>=" };
+    char* len_two[]   = { "->", "++", "--", "<<", ">>",
+                          "<=", ">=", "==", "!=", "&&",
+                          "||", "*=", "/=", "%=", "+=", 
+                          "-=", "&=", "^=", "|=", "##",
+                          "<:", ":>", "<%", "%>", "%:"};
+    char* len_one     = "[](){}.&*+-~!/%<>^|?:;=,#";
+
+    // TODO: dasai
+    if (len_punctuator_check(p, len_four, ARRAYSIZE(len_four)) > 0) {
+        return 4;
+    } else if (len_punctuator_check(p, len_three, ARRAYSIZE(len_three)) > 0) {
+        return 3;
+    } else if (len_punctuator_check(p, len_two, ARRAYSIZE(len_two)) > 0) {
+        return 2;
+    } else if (strchr(len_one, *p)) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /*
@@ -71,7 +125,7 @@ size_t len_string(const char* p) {
  6  `  a  b  c  d  e  f  g  h  i  j  k  l  m  n  o
  7  p  q  r  s  t  u  v  w  x  y  z  {  |  }  ~  
   */
-int read_tokens(List* list, const char* p) {
+int read_tokens(List* tkn, List* drct, const char* p) {
     switch (*p) {
         case '!':
         case '(':
@@ -83,52 +137,49 @@ int read_tokens(List* list, const char* p) {
         case '{':
         case '}':
         case '.':
-            p = add_token(list, p, 1);
-            break;
-        case '"':
-            p = add_token(list, p, len_string(p));    break;
-        case '#':
-            p = add_token(list, p, len_directive(p)); break;
         case '%':
         case '&':
-        case '\'':
         case '*':
         case '+':
         case '-':
-            // *** not impl ***
-            p = add_token(list, p, 1);
-            break;
+        case ':':
+        case '<':
+        case '=':
+        case '>':
+        case '?':
+        case '^':
+        case '|':
+        case '~':
+            p = add_token(tkn, p, len_punctuator(p)); break;
+        case '\'':
+            p = add_token(tkn, p, len_char(p));    break;
+        case '"':
+            p = add_token(tkn, p, len_string(p));    break;
+        case '#':
+            // TODO: 
+            // when arrived here, i think that leaked preprocessing directives out
+            p = skip_line(p+1); break;
         case '/':
             switch (*(p+1)) {
                 case '/': p = skip_comment_line(p+2);  break;
                 case '*': p = skip_comment_range(p+2); break;
-                default:  p = add_token(list, p, 1); break;
+                default:  p = add_token(tkn, p, len_punctuator(p)); break;
             }
             break;
-        case ':':
-        case '<':
-            
-        case '=':
-        case '>':
-        case '?':
         case '\\':
-        case '^':
         case '`':
-        case '|':
-        case '~':
-            p = add_token(list, p, 1);
-            break;
         case '$':
         case '@':
-            // unused
-            break;
+            // unused error
+            return -1;
         case '\0': // end of file
             return 0;
+        case '_':
         default:
-            if (IS_LETTER(*p)) { // symbol
-                p = add_token(list, p, len_symbol(p));
+            if (IS_LETTER(*p) || *p == '_') { // symbol
+                p = add_token(tkn, p, len_symbol(p));
             } else if (IS_DIGIT(*p)) {
-                p = add_token(list, p, len_number(p));
+                p = add_token(tkn, p, len_number(p));
             } else {
                 return -1;
             }
@@ -137,21 +188,20 @@ int read_tokens(List* list, const char* p) {
 
     p = skip_spaces(p);
     printf("===rest===\n%s", p);
-    return read_tokens(list, p);
+    return read_tokens(tkn, drct, p);
 }
 
-int lex(char** tokens, const char* source) {
-    List* list = list_create();
+int lex(List* tokens, List* directives, const char* source) {
     int err;
 
-    if (!list) { return -1; }
+    if (!tokens || !directives) { return -1; }
 
-    err = read_tokens(list, source);
+    err = read_tokens(tokens, directives, source);
     if (err < 0) {
         fprintf(stderr, "something failed: %d\n", err);
     }
-    print_tokens(list);
-    list_destroy(list);
+    print_tokens(tokens);
+    print_tokens(directives);
 
     return 0;
 }

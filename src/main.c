@@ -44,6 +44,17 @@ char* read_source(char* filename) {
     return data;
 }
 
+int preprocess(List* directives, char **dst, const char* src) {
+    /*
+    * - process directives
+    * - skip comments
+    */
+
+    *dst = (char*)src; // temporary
+
+    return 0;
+}
+
 /**
  * frontend:
  * - lexical analysis
@@ -54,31 +65,50 @@ char* read_source(char* filename) {
  * - code optimizetion
  * - generate assembly code
  */
-int compile(char* src) {
-    char *tokens = NULL;
-    int err;
+int process(char* srcfiles[], char* dst) {
+    char* srcfile = srcfiles[0];
+    char* source;
+
+    if (!(source = read_source(srcfile))) {
+        printf("failed reading source file: %s\n", srcfile);
+        return -1;
+    }
     
-    err = lex(&tokens, src);
+    List *tokens, *directives;
+    if (!(tokens = list_create()) || !(directives = list_create())) {
+        return -1;
+    }
+
+    int err;
+    // preprocessor
+    char* src_pped = NULL;
+    err = preprocess(directives, &src_pped, source);
+
+    // lex
+    err = lex(tokens, directives, source);
+
+    // throw away original source
+    free(source);
+
+    list_destroy(tokens);
+    list_destroy(directives);
+    
     return 0;
 }
 
 int main(int argc, char* argv[]) {
-    char *source;
+    char* sources[10];
 
+    /* parse options */
     printf("argc: %d\n", argc);
     if (argc > 0) {
         for (int i = 0; i < argc; i++) {
             printf("argv[%d]: %s\n", i, argv[i]);
         }
     }
+    sources[0] = argv[1]; // temporary
 
-    if (!(source = read_source(argv[1]))) {
-        printf("failed reading source file: %s\n", argv[1]);
-        return -1;
-    }
-
-    compile(source);
-
-    free(source);
-    return 0;
+    int ret = process(sources, NULL);
+    
+    return ret;
 }
