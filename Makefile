@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -Wall -Werror -pedantic-errors
+CFLAGS=-std=c11 -g -Wall -Werror -pedantic-errors
 LDFLAGS=
 LIBS=
 DEFINE=
